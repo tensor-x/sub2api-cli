@@ -1,35 +1,34 @@
 # sub2api-cli
 
-A small terminal UI for managing the sub2api group used by your local Codex token.
+一个面向 Codex + sub2api 的终端管理工具。它会读取本机 Codex 正在使用的 token，定位该 token 在 sub2api 中绑定的分组，并提供方向键交互界面，用来快速切换分组、开关账号调度、查看最近请求日志。
 
-It reads the Codex API key from `~/.codex/auth.json`, finds the matching sub2api API key, shows its current group, lets you switch that group, toggles account scheduling inside a group, and can print recent usage logs.
+> [!IMPORTANT]
+> `sub2api-cli` 不会打印完整 Codex token，只展示脱敏后的短指纹。配置时填写的是 sub2api Admin API Key，不是 Codex token。
 
-The CLI never prints the full Codex token. It only shows a masked token and a short SHA-256 fingerprint.
+## 功能
 
-## Features
+- 自动读取 `~/.codex/auth.json` 中的 Codex API Key
+- 定位当前 Codex token 所在的 sub2api 分组
+- 在终端 UI 中切换 Codex token 的分组
+- 查看分组内账号，并快速开启或关闭账号调度
+- 查看最新请求日志，默认 20 条
+- 默认通过 `http://127.0.0.1:7890` 代理请求 sub2api
+- 配置文件写入 `~/.config/sub2api-cli/config.json`，权限自动设置为 `0600`
 
-- Detect the current Codex token from `~/.codex/auth.json`
-- Locate which sub2api group that token currently uses
-- Switch the current Codex token to another group
-- List accounts in a group
-- Toggle account scheduling on or off
-- View latest usage logs, defaulting to the latest 20 records
-- Use a keyboard-driven terminal UI
-- Store the sub2api Admin API Key locally with `0600` permissions
-- Use `http://127.0.0.1:7890` as the default proxy for sub2api requests
+## 准备工作
 
-## Requirements
+你需要准备：
 
-- Python 3.10+
-- A terminal with `curses` support
-- A sub2api Admin API Key
-- A Codex auth file at `~/.codex/auth.json`
+- Python 3.10 或更高版本
+- 支持 `curses` 的终端
+- sub2api Admin API Key
+- 本机存在 Codex 登录文件：`~/.codex/auth.json`
 
-No third-party Python packages are required.
+本工具只使用 Python 标准库，不需要安装第三方依赖。
 
-## Install
+## 快速开始
 
-Clone the repository:
+克隆仓库：
 
 ```bash
 git clone https://github.com/tensor-x/sub2api-cli.git
@@ -37,109 +36,114 @@ cd sub2api-cli
 chmod +x sub2api_cli.py
 ```
 
-Optional: install it as `sub2api-cli`:
+可选：安装为全局命令。
 
 ```bash
 ln -sf "$PWD/sub2api_cli.py" /usr/local/bin/sub2api-cli
 ```
 
-## Configure
-
-Configure the sub2api Admin API Key.
-
-This is **not** your Codex token. It is the Admin API Key used to call sub2api management APIs.
+配置 sub2api Admin API Key：
 
 ```bash
 sub2api-cli config --admin-token '<your-sub2api-admin-api-key>'
 ```
 
-The config file is written to:
-
-```text
-~/.config/sub2api-cli/config.json
-```
-
-The file mode is set to `0600`.
-
-The default base URL is:
-
-```text
-https://sub2api.seei.app
-```
-
-Change it if needed:
-
-```bash
-sub2api-cli config --base-url https://sub2api.seei.app
-```
-
-The default proxy is:
-
-```text
-http://127.0.0.1:7890
-```
-
-Change the proxy:
-
-```bash
-sub2api-cli config --proxy-url http://127.0.0.1:7890
-```
-
-Disable the proxy:
-
-```bash
-sub2api-cli config --proxy-url ''
-```
-
-## Usage
-
-Open the interactive UI:
+启动交互界面：
 
 ```bash
 sub2api-cli
 ```
 
-or:
+## 配置
+
+默认服务地址是：
+
+```text
+https://sub2api.seei.app
+```
+
+如需修改：
+
+```bash
+sub2api-cli config --base-url https://sub2api.seei.app
+```
+
+默认代理地址是：
+
+```text
+http://127.0.0.1:7890
+```
+
+如需修改：
+
+```bash
+sub2api-cli config --proxy-url http://127.0.0.1:7890
+```
+
+如需禁用代理：
+
+```bash
+sub2api-cli config --proxy-url ''
+```
+
+> [!NOTE]
+> 如果你之前配置过旧地址，配置文件中的值会优先生效。执行 `sub2api-cli config --base-url ...` 即可覆盖。
+
+## 常用命令
+
+进入终端 UI：
+
+```bash
+sub2api-cli
+```
+
+或显式进入 UI：
 
 ```bash
 sub2api-cli ui
 ```
 
-Print current status:
+查看当前 Codex token 状态：
 
 ```bash
 sub2api-cli status
 ```
 
-Show the latest 20 usage logs:
+查看最新 20 条请求日志：
 
 ```bash
 sub2api-cli logs
 ```
 
-Show a custom number of usage logs:
+查看指定数量的日志：
 
 ```bash
 sub2api-cli logs -n 50
 ```
 
-## Keyboard Shortcuts
+## 交互快捷键
 
-| Key | Action |
+| 按键 | 作用 |
 | --- | --- |
-| `↑` / `↓` | Move selection |
-| `←` / `→` | Switch between group panel and account panel |
-| `Enter` on group | Switch current Codex token to the selected group |
-| `Enter` on account | Toggle account scheduling |
-| `Space` on account | Toggle account scheduling |
-| `o` on account | Enable account scheduling |
-| `x` on account | Disable account scheduling |
-| `r` | Refresh |
-| `q` / `Esc` | Quit |
+| `↑` / `↓` | 上下移动选择 |
+| `←` / `→` | 在分组面板和账号面板之间切换 |
+| `Enter`，分组面板 | 将当前 Codex token 切换到选中分组 |
+| `Enter`，账号面板 | 开启或关闭选中账号调度 |
+| `Space`，账号面板 | 开启或关闭选中账号调度 |
+| `o`，账号面板 | 开启选中账号调度 |
+| `x`，账号面板 | 关闭选中账号调度 |
+| `r` | 刷新数据 |
+| `q` / `Esc` | 退出 |
 
-## How It Works
+## 工作方式
 
-The CLI uses these sub2api Admin API endpoints:
+`sub2api-cli` 使用 sub2api Admin API 完成管理操作，Admin API Key 会通过请求头传递：
+
+```text
+x-api-key: <your-admin-api-key>
+```
+
+当前使用的接口包括：
 
 - `GET /api/v1/admin/groups/all`
 - `GET /api/v1/admin/groups/:id/api-keys`
@@ -148,21 +152,12 @@ The CLI uses these sub2api Admin API endpoints:
 - `POST /api/v1/admin/accounts/:id/schedulable`
 - `GET /api/v1/admin/usage`
 
-The CLI sends the Admin API Key with:
+> [!TIP]
+> 启动 UI 时会先加载分组、API key 和账号数据。如果网络较慢，界面会先显示加载提示；后续上下移动只使用本地缓存，不会每次移动都请求接口。
 
-```text
-x-api-key: <your-admin-api-key>
-```
+## 安全说明
 
-It also sends a browser-like `User-Agent` to avoid being blocked by overly strict edge rules.
-
-## Security Notes
-
-- Do not publish your `~/.config/sub2api-cli/config.json`.
-- Do not publish your `~/.codex/auth.json`.
-- The CLI masks token output and does not print full tokens.
-- The Admin API Key is stored locally because the tool needs it to call sub2api management APIs.
-
-## License
-
-MIT
+- 不要公开 `~/.config/sub2api-cli/config.json`
+- 不要公开 `~/.codex/auth.json`
+- 不要把 sub2api Admin API Key 当作 Codex token 使用
+- 工具会对 Codex token 做脱敏展示，但配置文件仍需要你自己妥善保管
